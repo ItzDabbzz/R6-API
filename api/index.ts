@@ -18,6 +18,9 @@ if (!config.debug_mode) {
 // Create Express instance.
 const app = express()
 
+// Trust proxy - required for Vercel/serverless environments to get real client IP
+app.set('trust proxy', 1)
+
 // Create class singletons.
 UbiLoginManager.instance = new UbiLoginManager()
 
@@ -27,7 +30,11 @@ const limiter = rateLimit({
     windowMs: 1000,
     standardHeaders: false,
     legacyHeaders: false,
-    message: tooManyRequestsError
+    message: tooManyRequestsError,
+    // Use a more compatible key generator for serverless
+    keyGenerator: (req) => {
+        return req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0].trim() || 'unknown'
+    }
 })
 
 // Enable Helmet security.
