@@ -7,7 +7,7 @@ This project has been converted to work with Vercel's serverless platform.
 1. **No clustering** - Vercel handles auto-scaling
 2. **Serverless functions** - Each request is handled by a separate function instance
 3. **Vercel KV storage** - Auth tokens stored in Redis-compatible KV store (or environment variables as fallback)
-4. **Vercel Cron** - Scheduled auth token refresh every 2 hours
+4. **Vercel Cron** - Scheduled auth token refresh daily (or upgrade to Pro for more frequent refreshes)
 
 ## Project Structure
 
@@ -89,7 +89,28 @@ This starts Vercel's local development server with serverless function emulation
 
 ## Cron Jobs
 
-The auth token refresh runs automatically every 2 hours via Vercel Cron (configured in `vercel.json`).
+**Hobby Plan**: The auth token refresh runs once daily at midnight UTC (`0 0 * * *`) via Vercel Cron.
+
+**Pro Plan**: You can upgrade to more frequent refreshes (e.g., every 2 hours: `0 */2 * * *`) by changing the schedule in `vercel.json`.
+
+### Alternative: Manual Token Refresh
+
+If daily refresh isn't frequent enough, you can:
+
+1. **Manually trigger the cron endpoint**:
+   ```bash
+   curl -X POST https://your-app.vercel.app/api/cron/refresh-auth \
+     -H "Authorization: Bearer YOUR_CRON_SECRET"
+   ```
+
+2. **Use an external cron service** (free options):
+   - [cron-job.org](https://cron-job.org) - Free, reliable cron service
+   - [EasyCron](https://www.easycron.com) - Free tier available
+   - [UptimeRobot](https://uptimerobot.com) - Monitor endpoint + trigger refreshes
+
+   Configure them to call your `/api/cron/refresh-auth` endpoint every 2 hours.
+
+3. **Upgrade to Vercel Pro** for native multi-hourly cron support.
 
 ## Storage Options
 
