@@ -21,7 +21,7 @@ export default async function Token(version: string): Promise<UbiToken | void> {
 
             // Auto-login on first request if tokens are missing
             if (!autoLoginAttempted && UbiLoginManager.instance) {
-                console.log('Attempting auto-login to generate initial tokens...')
+                console.log('No tokens found. Attempting auto-login to generate initial tokens...')
                 autoLoginAttempted = true
 
                 try {
@@ -31,13 +31,25 @@ export default async function Token(version: string): Promise<UbiToken | void> {
                     if (newToken) {
                         console.log(`Successfully generated token for version ${version}`)
                         return newToken
+                    } else {
+                        console.error('Token generation succeeded but token still not found')
                     }
                 } catch (loginError) {
-                    console.error('Auto-login failed:', loginError)
+                    const errorMessage = loginError instanceof Error ? loginError.message : String(loginError)
+                    console.error('Auto-login failed:', errorMessage)
+
+                    // Provide helpful error message for rate limiting
+                    if (errorMessage.includes('Rate limited') || errorMessage.includes('429')) {
+                        console.error('SOLUTION: Wait 15-30 minutes before trying again, or manually set tokens using the /api/cron/refresh-auth endpoint')
+                    }
+
+                    throw new Error(`Failed to retrieve auth token: ${errorMessage}`)
                 }
+            } else if (autoLoginAttempted) {
+                throw new Error(`Auth token for version ${version} not available. Auto-login already attempted and failed.`)
             }
 
-            return
+            throw new Error(`Auth token for version ${version} not available and auto-login instance not initialized.`)
         }
 
         // UbiAuthResponse extends UbiToken, so this is safe

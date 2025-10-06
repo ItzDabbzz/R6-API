@@ -68,7 +68,7 @@ Or connect your GitHub repository to Vercel for automatic deployments.
 
 ### 6. Initialize Auth Tokens
 
-After deploying, manually trigger the auth refresh endpoint to generate initial tokens:
+**IMPORTANT**: After deploying, you MUST manually trigger the auth refresh endpoint to generate initial tokens:
 
 ```bash
 curl -X POST https://your-app.vercel.app/api/cron/refresh-auth \
@@ -77,7 +77,13 @@ curl -X POST https://your-app.vercel.app/api/cron/refresh-auth \
 
 You should see: `{"success":true,"message":"Auth tokens refreshed"}`
 
-**Note**: The API will also auto-generate tokens on the first request if they're missing, but manually initializing is recommended.
+**⚠️ RATE LIMITING WARNING**:
+- Ubisoft's API has strict rate limits on login attempts
+- **Do NOT** call the refresh endpoint more than once every 15-30 minutes
+- If you get a 429 error, wait at least 30 minutes before trying again
+- The API will auto-generate tokens on the first request if missing, but this can trigger rate limits if you make multiple requests
+
+**Best Practice**: Initialize tokens once manually, then let the daily cron job handle refreshes.
 
 ## Local Development
 
@@ -150,6 +156,16 @@ If daily refresh isn't frequent enough, you can:
 - Check that `UBI_EMAIL` and `UBI_PASSWORD` environment variables are set correctly
 - Verify Vercel KV is connected (or tokens won't persist across cold starts)
 - The API will auto-login on first request, but manual initialization is recommended
+
+**"Too many requests" / 429 Rate Limit Error:**
+- Ubisoft limits login attempts to ~3 per hour per account
+- **WAIT 30-60 minutes** before trying to refresh tokens again
+- This often happens if you:
+  - Made multiple deployments/tests in quick succession
+  - Auto-login triggered multiple times
+  - Manually called `/api/cron/refresh-auth` too frequently
+- **Solution**: Be patient and wait for the rate limit to reset
+- **Prevention**: Only initialize tokens once after deployment, then use daily cron
 
 **"JSON.parse" errors with Vercel KV:**
 - This has been fixed - Vercel KV handles JSON serialization automatically

@@ -15,22 +15,17 @@ export class UbiLoginManager {
      *
      * Avoid calling this function more than 3 times per hour.
      *
-     * @returns Whether the login was aborted.
+     * @throws Error if login fails (including rate limiting)
      */
     async Login(): Promise<void> {
-        try {
-            const tokenV2 = await this.RequestLogin(UbiAppId.v2)
-            if (tokenV2) {
-                await TokenStorage.saveToken('v2', tokenV2)
-            }
-
-            const tokenV3 = await this.RequestLogin(UbiAppId.v3)
-            if (tokenV3) {
-                await TokenStorage.saveToken('v3', tokenV3)
-            }
+        const tokenV2 = await this.RequestLogin(UbiAppId.v2)
+        if (tokenV2) {
+            await TokenStorage.saveToken('v2', tokenV2)
         }
-        catch (error) {
-            console.error(error)
+
+        const tokenV3 = await this.RequestLogin(UbiAppId.v3)
+        if (tokenV3) {
+            await TokenStorage.saveToken('v3', tokenV3)
         }
     }
 
@@ -69,14 +64,18 @@ export class UbiLoginManager {
 
                 if (axiosError.response?.status) {
                     switch (axiosError.response?.status) {
-                        case 401: throw 'Account does not exist.'
-                        case 409: throw 'Captcha needed.'
-                        case 429: throw 'Too many requests.'
-                        default: throw error
+                        case 401:
+                            throw new Error('Ubisoft login failed: Invalid credentials')
+                        case 409:
+                            throw new Error('Ubisoft login failed: Captcha required')
+                        case 429:
+                            throw new Error('Ubisoft login failed: Rate limited (too many login attempts). Wait before trying again.')
+                        default:
+                            throw new Error(`Ubisoft login failed: HTTP ${axiosError.response.status}`)
                     }
                 }
             }
-            else { throw error }
+            throw error
         }
     }
 }
