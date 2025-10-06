@@ -22,8 +22,9 @@ export class TokenStorage {
         const key = `auth_token_${version}`
 
         if (this.kvStore) {
-            // Store in Vercel KV with 2 hour expiry (tokens refresh every 2 hours)
-            await this.kvStore.set(key, JSON.stringify(token), { ex: 7200 })
+            // Store in Vercel KV with 2 hour expiry
+            // Vercel KV automatically handles JSON serialization
+            await this.kvStore.set(key, token, { ex: 7200 })
         } else {
             // Fallback: Store in process memory (not ideal for serverless, but works for single invocation)
             // For production, you should use Vercel KV or another persistent store
@@ -38,16 +39,17 @@ export class TokenStorage {
         const key = `auth_token_${version}`
 
         if (this.kvStore) {
+            // Vercel KV automatically handles JSON deserialization
             const data = await this.kvStore.get(key)
-            return data ? JSON.parse(data as string) : null
+            return data as UbiAuthResponse || null
         } else {
             // Try environment variables first (set these in Vercel dashboard)
             const envKey = `UBI_TOKEN_${version.toUpperCase()}`
             if (process.env[envKey]) {
                 try {
                     return JSON.parse(process.env[envKey]!)
-                } catch {
-                    console.error(`Failed to parse ${envKey} from environment`)
+                } catch (error) {
+                    console.error(`Failed to parse ${envKey} from environment:`, error)
                 }
             }
 

@@ -66,13 +66,18 @@ vercel
 
 Or connect your GitHub repository to Vercel for automatic deployments.
 
-### 6. Set Up Cron Secret
+### 6. Initialize Auth Tokens
 
-After deploying, add the `CRON_SECRET` to your Vercel Cron configuration:
+After deploying, manually trigger the auth refresh endpoint to generate initial tokens:
 
-1. Go to Project Settings → Environment Variables
-2. Add `CRON_SECRET` with a secure random value
-3. Redeploy
+```bash
+curl -X POST https://your-app.vercel.app/api/cron/refresh-auth \
+  -H "Authorization: Bearer YOUR_CRON_SECRET"
+```
+
+You should see: `{"success":true,"message":"Auth tokens refreshed"}`
+
+**Note**: The API will also auto-generate tokens on the first request if they're missing, but manually initializing is recommended.
 
 ## Local Development
 
@@ -140,19 +145,33 @@ If daily refresh isn't frequent enough, you can:
 
 ## Troubleshooting
 
+**"No token found for version v2/v3":**
+- First deployment: Manually trigger `/api/cron/refresh-auth` to initialize tokens
+- Check that `UBI_EMAIL` and `UBI_PASSWORD` environment variables are set correctly
+- Verify Vercel KV is connected (or tokens won't persist across cold starts)
+- The API will auto-login on first request, but manual initialization is recommended
+
+**"JSON.parse" errors with Vercel KV:**
+- This has been fixed - Vercel KV handles JSON serialization automatically
+- If you see this error, ensure you're using the latest code version
+
+**"trust proxy" / rate limiting errors:**
+- Fixed in latest version - `app.set('trust proxy', 1)` is now enabled
+- Vercel uses proxies, so Express needs to trust the `X-Forwarded-For` header
+
 **Tokens not persisting:**
-- Ensure Vercel KV is properly connected
-- Check environment variables are set correctly
-- Verify cron job is running (`/api/cron/refresh-auth`)
+- Ensure Vercel KV is properly connected in your project dashboard
+- Without KV, tokens only persist in memory (lost on cold starts)
+- Alternative: Set `UBI_TOKEN_V2` and `UBI_TOKEN_V3` as environment variables
 
 **Rate limiting issues:**
-- Adjust `max_requests_per_user_per_second` in config
-- Consider using Vercel Edge Config for distributed rate limiting
+- Adjust `MAX_REQUESTS_PER_SECOND` environment variable (default: 8)
+- Rate limiting is per-function instance in serverless
 
 **Authentication errors:**
-- Check Ubisoft credentials in `config.json`
-- Verify tokens are being refreshed (check function logs)
-- Ensure cron secret matches between environment and requests
+- Check `UBI_EMAIL` and `UBI_PASSWORD` environment variables
+- Verify tokens are being refreshed (check function logs in Vercel dashboard)
+- Ensure `CRON_SECRET` matches between environment and cron service
 
 ## Migrating from Traditional Server
 
