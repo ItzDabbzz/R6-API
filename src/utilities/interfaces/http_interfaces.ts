@@ -5,6 +5,8 @@ export interface UbiToken {
 }
 
 export interface UbiAuthResponse extends UbiToken {
+    platformType: string
+    twoFactorAuthenticationTicket: string | null
     profileId: string
     userId: string
     nameOnPlatform: string
