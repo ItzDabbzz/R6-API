@@ -104,11 +104,13 @@ If daily refresh isn't frequent enough, you can:
    ```
 
 2. **Use an external cron service** (free options):
-   - [cron-job.org](https://cron-job.org) - Free, reliable cron service
+   - [cron-job.org](https://cron-job.org) - Free, reliable cron service (Recommended!)
    - [EasyCron](https://www.easycron.com) - Free tier available
    - [UptimeRobot](https://uptimerobot.com) - Monitor endpoint + trigger refreshes
 
    Configure them to call your `/api/cron/refresh-auth` endpoint every 2 hours.
+
+   **See [EXTERNAL-CRON-SETUP.md](EXTERNAL-CRON-SETUP.md) for detailed setup instructions.**
 
 3. **Upgrade to Vercel Pro** for native multi-hourly cron support.
 
@@ -116,8 +118,8 @@ If daily refresh isn't frequent enough, you can:
 
 ### Option 1: Vercel KV (Recommended)
 - Persistent Redis-compatible storage
-- Automatic expiration (tokens expire after 2 hours)
-- Best for production
+- Tokens stored with 2-hour TTL (auto-deleted after expiration)
+- Best for production use
 
 ### Option 2: Environment Variables
 - Set `UBI_TOKEN_V2` and `UBI_TOKEN_V3` manually

@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios'
 import config from '../utilities/config-loader'
 import { TokenStorage } from '../utilities/token-storage'
-import { R6UserResponse } from '../utilities/interfaces/http_interfaces'
+import { UbiAuthResponse } from '../utilities/interfaces/http_interfaces'
 import { UbiAppId } from '../utilities/interfaces/enums'
 
 
@@ -21,12 +21,12 @@ export class UbiLoginManager {
         try {
             const tokenV2 = await this.RequestLogin(UbiAppId.v2)
             if (tokenV2) {
-                await TokenStorage.saveToken('v2', tokenV2 as R6UserResponse)
+                await TokenStorage.saveToken('v2', tokenV2)
             }
 
             const tokenV3 = await this.RequestLogin(UbiAppId.v3)
             if (tokenV3) {
-                await TokenStorage.saveToken('v3', tokenV3 as R6UserResponse)
+                await TokenStorage.saveToken('v3', tokenV3)
             }
         }
         catch (error) {
@@ -36,11 +36,11 @@ export class UbiLoginManager {
 
     /**
      * Makes an HTTP request to Ubisoft to login to the specified account.
-     * 
+     *
      * @param appId Ubi-AppId header value.
-     * @returns Simplified token object.
+     * @returns Auth response with token and session data.
      */
-    async RequestLogin(appId: UbiAppId): Promise<R6UserResponse | void> {
+    async RequestLogin(appId: UbiAppId): Promise<UbiAuthResponse | void> {
         const credentials = Buffer.from(`${config.ubi_credentials.email}:${config.ubi_credentials.password}`).toString('base64')
 
         const httpConfig = {
@@ -61,7 +61,7 @@ export class UbiLoginManager {
 
         try {
             const response = await axios(httpConfig)
-            return response.data as R6UserResponse
+            return response.data as UbiAuthResponse
         }
         catch (error) {
             if (axios.isAxiosError(error)) {

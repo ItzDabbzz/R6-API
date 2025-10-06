@@ -1,4 +1,4 @@
-import { R6UserResponse } from './interfaces/http_interfaces'
+import { UbiAuthResponse } from './interfaces/http_interfaces'
 
 /**
  * Token storage adapter for serverless environments.
@@ -18,7 +18,7 @@ export class TokenStorage {
         }
     }
 
-    static async saveToken(version: 'v2' | 'v3', token: R6UserResponse): Promise<void> {
+    static async saveToken(version: 'v2' | 'v3', token: UbiAuthResponse): Promise<void> {
         const key = `auth_token_${version}`
 
         if (this.kvStore) {
@@ -34,7 +34,7 @@ export class TokenStorage {
         }
     }
 
-    static async getToken(version: 'v2' | 'v3'): Promise<R6UserResponse | null> {
+    static async getToken(version: 'v2' | 'v3'): Promise<UbiAuthResponse | null> {
         const key = `auth_token_${version}`
 
         if (this.kvStore) {
@@ -62,5 +62,5 @@ TokenStorage.initialize()
 
 // Type augmentation for global token cache
 declare global {
-    var tokenCache: Record<string, R6UserResponse> | undefined
+    var tokenCache: Record<string, UbiAuthResponse> | undefined
 }

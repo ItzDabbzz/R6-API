@@ -6,9 +6,10 @@ UbiLoginManager.instance = new UbiLoginManager()
 
 /**
  * Vercel Cron endpoint to refresh Ubisoft authentication tokens.
- * This runs every 2 hours as configured in vercel.json.
+ * Default schedule: Daily at midnight UTC (Hobby plan limitation).
+ * For more frequent refreshes (e.g., every 2 hours), upgrade to Pro or use an external cron service.
  *
- * Note: Vercel Cron requires a secret header for security.
+ * Note: This endpoint is protected by CRON_SECRET for security.
  * Set CRON_SECRET in your Vercel environment variables.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {

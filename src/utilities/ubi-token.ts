@@ -18,7 +18,8 @@ export default async function Token(version: string): Promise<UbiToken | void> {
             return
         }
 
-        return token as UbiToken
+        // UbiAuthResponse extends UbiToken, so this is safe
+        return token
     }
     catch (error) {
         console.error(error)

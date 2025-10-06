@@ -4,6 +4,19 @@ export interface UbiToken {
     sessionId: string
 }
 
+export interface UbiAuthResponse extends UbiToken {
+    profileId: string
+    userId: string
+    nameOnPlatform: string
+    environment: string
+    spaceId: string
+    clientIp: string
+    clientIpCountry: string
+    serverTime: string
+    sessionKey: string
+    rememberMeTicket: string
+}
+
 export interface R6UserResponse {
     profiles: R6UserData[]
 }
