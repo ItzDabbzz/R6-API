@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios'
-import config from '../configs/config.json'
-import { SaveJSONToFile } from '../utilities/file-stream'
+import config from '../utilities/config-loader'
+import { TokenStorage } from '../utilities/token-storage'
 import { R6UserResponse } from '../utilities/interfaces/http_interfaces'
 import { UbiAppId } from '../utilities/interfaces/enums'
 
@@ -11,19 +11,23 @@ export class UbiLoginManager {
 
     /**
      * Logs into a Ubisoft acount twice, once with a V2 appId and once with a
-     * V3 appId. Saves both auth tokens to the `private/auth_token_{VERSION}` files.
-     * 
+     * V3 appId. Saves both auth tokens to storage (Vercel KV or environment variables).
+     *
      * Avoid calling this function more than 3 times per hour.
-     * 
+     *
      * @returns Whether the login was aborted.
      */
     async Login(): Promise<void> {
         try {
             const tokenV2 = await this.RequestLogin(UbiAppId.v2)
-            await SaveJSONToFile('private/auth_token_v2.json', tokenV2 as R6UserResponse)
-    
+            if (tokenV2) {
+                await TokenStorage.saveToken('v2', tokenV2 as R6UserResponse)
+            }
+
             const tokenV3 = await this.RequestLogin(UbiAppId.v3)
-            await SaveJSONToFile('private/auth_token_v3.json', tokenV3 as R6UserResponse)
+            if (tokenV3) {
+                await TokenStorage.saveToken('v3', tokenV3 as R6UserResponse)
+            }
         }
         catch (error) {
             console.error(error)

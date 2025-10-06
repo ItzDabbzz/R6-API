@@ -1,7 +1,8 @@
 node_modules
-private
+.git
 .env
 .env.local
-.vercel
+private
 dist
 *.log
+src/index.ts

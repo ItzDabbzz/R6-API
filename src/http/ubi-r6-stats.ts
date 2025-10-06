@@ -16,7 +16,7 @@ import {
   R6SeasonCasualStats,
 } from "../utilities/interfaces/front_interfaces";
 import Token from "../utilities/ubi-token";
-import config from "../configs/config.json";
+import config from "../utilities/config-loader";
 import axios from "axios";
 import {
   R6LevelResponse,

@@ -1,4 +1,4 @@
-import config from '../configs/config.json'
+import config from './config-loader'
 import { R6Platform, R6Rank } from './interfaces/enums'
 
 
